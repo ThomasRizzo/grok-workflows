@@ -1,0 +1,2 @@
+# Third-party datasheets stay local. They are large and not part of the workflow.
+*.pdf
