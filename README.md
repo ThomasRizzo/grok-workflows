@@ -12,10 +12,13 @@ Run it from a Grok session in this repo:
 /datasheet-skills
 ```
 
-Pass `args.pdf` (path to a `.pdf`) and `args.part` (a short slug such as `rp2350`). Optional args:
+Works for microcontrollers and for peripheral ICs (ADC, DAC, sensors, drivers, memories). Pass `args.pdf` (path to a `.pdf`) and `args.part` (a short slug such as `rp2350` or `ads1115`). Optional args:
 
 | Arg | Default | Meaning |
 | --- | --- | --- |
+| `device_class` | `auto` | `mcu`, `peripheral`, or `auto`; picks the block vocabulary |
+| `interfaces` | `[]` | Host interfaces to emphasize, e.g. `["i2c"]` |
+| `extra_blocks` | `[]` | Heading names that must become their own skills |
 | `skills_dir` | `.grok/skills` | Where skills are written |
 | `max_skills` | 36 | Cap on section and peripheral skills (1–48) |
 | `split_pages` | 90 | Split a top-level section longer than this |
