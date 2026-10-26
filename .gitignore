@@ -1,2 +1,3 @@
-# Third-party datasheets stay local. They are large and not part of the workflow.
+# Ignore extra PDFs. The RP2350 datasheet is vendored unchanged (CC BY-ND 4.0).
 *.pdf
+!RP-008373-DS-3-rp2350-datasheet.pdf

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>datasheet-skills — flow</title>
+<style>
+  :root {
+    --ink: #1c1915;
+    --muted: #5c564c;
+    --line: #c9c1b4;
+    --paper: #f6f3ec;
+    --card: #fffdf8;
+    --script: #efeae1;
+    --agent: #e7f0ea;
+    --agent-edge: #2f6f4e;
+    --parallel: #e8eef6;
+    --parallel-edge: #2c5282;
+    --gate: #f8f0d8;
+    --gate-edge: #8a6a1a;
+    --exit: #f6e6e2;
+    --exit-edge: #8d3b2f;
+    --done: #e5efe4;
+    --done-edge: #2a5c32;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 15px/1.45 "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+  }
+  header {
+    padding: 28px 32px 8px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  h1 code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.86em; }
+  .lede { margin: 0; color: var(--muted); max-width: 68ch; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin: 16px 0 0;
+    font-size: 13px;
+  }
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .swatch {
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid;
+    border-radius: 2px;
+  }
+  main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 12px 32px 64px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; padding: 12px 16px 48px; }
+    header { padding: 20px 16px 8px; }
+  }
+  .flow { display: flex; flex-direction: column; align-items: center; }
+  .node {
+    width: min(100%, 640px);
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    padding: 12px 14px 11px;
+  }
+  .node h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 650;
+  }
+  .node p { margin: 0; color: var(--ink); }
+  .node ul { margin: 6px 0 0; padding-left: 1.15em; }
+  .node li { margin: 2px 0; }
+  .kicker {
+    display: block;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .script { background: var(--script); }
+  .agent { background: var(--agent); border-color: var(--agent-edge); }
+  .parallel { background: var(--parallel); border-color: var(--parallel-edge); }
+  .gate { background: var(--gate); border-color: var(--gate-edge); }
+  .done { background: var(--done); border-color: var(--done-edge); }
+  .stem {
+    width: 1.5px;
+    height: 18px;
+    background: #8a8174;
+  }
+  .branch {
+    width: min(100%, 640px);
+    display: grid;
+    grid-template-columns: 1fr 18px 1fr;
+    align-items: stretch;
+  }
+  .branch .arm { display: flex; flex-direction: column; align-items: center; }
+  .branch .rail {
+    border-top: 1.5px solid #8a8174;
+    border-left: 1.5px solid #8a8174;
+    border-bottom: 1.5px solid #8a8174;
+    border-radius: 8px 0 0 8px;
+    margin: 22px 0 22px 40%;
+  }
+  .branch .join {
+    border-top: 1.5px solid #8a8174;
+    border-right: 1.5px solid #8a8174;
+    border-bottom: 1.5px solid #8a8174;
+    border-radius: 0 8px 8px 0;
+    margin: 22px 40% 22px 0;
+  }
+  .exit {
+    background: var(--exit);
+    border-color: var(--exit-edge);
+    width: 100%;
+  }
+  .tag {
+    display: inline-block;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 99px;
+    border: 1px solid currentColor;
+    margin-right: 4px;
+  }
+  .side {
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .side section {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .side h2 { margin: 0 0 8px; font-size: 15px; }
+  .side ol, .side ul { margin: 0; padding-left: 1.15em; }
+  .side li { margin: 4px 0; }
+  .side p { margin: 0 0 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 4px 6px 4px 0; vertical-align: top; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  .small { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1><code>datasheet-skills</code></h1>
+  <p class="lede">Map a datasheet PDF, then write one lookup skill per selected section or peripheral. Page numbers are PDF indexes (<code>pdftotext -f</code>), not printed page numbers.</p>
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--script);border-color:var(--line)"></i> script</span>
+    <span><i class="swatch" style="background:var(--agent);border-color:var(--agent-edge)"></i> one agent</span>
+    <span><i class="swatch" style="background:var(--parallel);border-color:var(--parallel-edge)"></i> parallel agents</span>
+    <span><i class="swatch" style="background:var(--gate);border-color:var(--gate-edge)"></i> human gate</span>
+    <span><i class="swatch" style="background:var(--exit);border-color:var(--exit-edge)"></i> stop</span>
+    <span><i class="swatch" style="background:var(--done);border-color:var(--done-edge)"></i> finish</span>
+  </div>
+</header>
+<main>
+  <div class="flow">
+
+    <article class="node script">
+      <span class="kicker">Start</span>
+      <h2>Args and self-check</h2>
+      <ul>
+        <li><code>self_check()</code> on number, slug, sort, page-end, and select rules.</li>
+        <li>Required: <code>args.pdf</code>, <code>args.part</code> (2–24, used in skill names).</li>
+        <li>Defaults: <code>skills_dir=.grok/skills</code>, <code>max_skills=36</code> (1–48), <code>split_pages=90</code> (20–400), <code>min_pages=2</code> (1–30).</li>
+      </ul>
+    </article>
+
+    <div class="stem"></div>
+    <div class="branch">
+      <div class="arm"><article class="node exit"><span class="kicker">pause · infra</span><h2>Self-check failed</h2><p>Re-fires on every resume. Fix the script.</p></article></div>
+      <div class="rail"></div>
+      <div class="arm"><article class="node exit"><span class="kicker">pause · verification</span><h2>Bad args</h2><p>Missing PDF path, not a <code>.pdf</code>, bad part slug, or <code>skills_dir</code> contains <code>..</code>.</p></article></div>
+    </div>
+    <div class="stem"></div>
+
+    <article class="node agent">
+      <span class="kicker">Phase · Outline · agent “outline” · execute</span>
+      <h2>Read the PDF outline</h2>
+      <ul>
+        <li><code>pdfinfo</code> for the page count. <code>qpdf --json --json-key=outlines</code> for destinations.</li>
+        <li>Keep depth 0 and depth 1 only (≤180). Drop depth 2+; those stay inside the parent skill.</li>
+        <li>Each entry: <code>number</code>, <code>title</code>, <code>slug</code>, <code>kind</code>, <code>start_page</code>.</li>
+        <li>Kinds: <code>section</code>, <code>peripheral</code>, <code>container</code>, <code>skip</code>.</li>
+        <li>Empty outline: return no entries. Do not guess pages.</li>
+      </ul>
+    </article>
+
+    <div class="stem"></div>
+    <div class="branch">
+      <div class="arm">
+        <article class="node exit">
+          <span class="kicker">complete</span>
+          <h2>No usable outline</h2>
+          <p>No entries, or no page count. Also exits if every entry fails the checks below.</p>
+        </article>
+      </div>
+      <div class="rail"></div>
+      <div class="arm">
+        <article class="node script">
+          <span class="kicker">script</span>
+          <h2>Build the catalog</h2>
+          <ul>
+            <li>Drop bad numbers, titles, pages past the count, empty slugs, and duplicates.</li>
+            <li>Sort by start page, then shallower heading first.</li>
+            <li>End page is the page before the next heading at the same or shallower depth.</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+    <div class="stem"></div>
+
+    <article class="node agent">
+      <span class="kicker">Phase · Select · agent “classify” · read-only</span>
+      <h2>Relabel every heading</h2>
+      <p>No tools. One label per outline number. May correct the slug. On failure, keep the outline kinds.</p>
+      <ul>
+        <li><strong>peripheral</strong> — a named block (UART, DMA, PIO, clocks, bootrom, …). Never split.</li>
+        <li><strong>container</strong> — a heading that only groups blocks, such as “Peripherals”. Dropped; children become skills.</li>
+        <li><strong>skip</strong> — legal, TOC, history, units, register-field glossary.</li>
+        <li><strong>section</strong> — intro, bus, processor, electrical, errata, and other chapters.</li>
+      </ul>
+    </article>
+
+    <div class="stem"></div>
+    <article class="node script">
+      <span class="kicker">script · select_roots</span>
+      <h2>Pick the skills</h2>
+      <ul>
+        <li>Walk depth-0 roots. Explode a node when the side rules say so, and collect the children instead.</li>
+        <li>Keep <code>section</code> and <code>peripheral</code>. Drop <code>skip</code>, leftover <code>container</code>, and sections shorter than <code>min_pages</code>.</li>
+        <li>Rename slug <code>datasheet</code> to <code>overview</code>. Deduplicate slugs with <code>n12-1</code> style fallbacks.</li>
+        <li>Order peripherals first, then sections by longest span.</li>
+        <li>Cap at <code>max_skills</code> and at agent budget: each kept block costs two later agents (write + verify), leaving one slot for the index.</li>
+        <li>Skill name <code>{part}-{slug}</code>, directory <code>{skills_dir}/{part}-{slug}</code>. Names longer than 64 characters are cut.</li>
+      </ul>
+    </article>
+
+    <div class="stem"></div>
+    <div class="branch">
+      <div class="arm">
+        <article class="node exit">
+          <span class="kicker">complete</span>
+          <h2>Nothing selected</h2>
+          <p>No section or peripheral survived the filters and the cap.</p>
+        </article>
+      </div>
+      <div class="rail"></div>
+      <div class="arm">
+        <article class="node gate">
+          <span class="kicker">await_user · user</span>
+          <h2>Confirm the plan</h2>
+          <p>Writes <code>catalog.md</code> and pauses: “Write N skills under {skills_dir}?” Resume continues. Stop the run to change args.</p>
+        </article>
+      </div>
+    </div>
+    <div class="stem"></div>
+
+    <article class="node parallel">
+      <span class="kicker">Phase · Write · parallel · capability all</span>
+      <h2>One writer per chosen block</h2>
+      <ul>
+        <li>May run <code>pdftotext</code>, <code>pdfinfo</code>, and <code>mkdir</code>. Writes only <code>SKILL.md</code> in its directory.</li>
+        <li>Reads the range in windows of at most 25 pages. Confirms the heading is on <code>start_page</code>.</li>
+        <li>Lookup procedure, not a copy of the datasheet. At most 12 short facts. Under 160 lines.</li>
+        <li>Returns <code>wrote</code> and <code>heading_seen</code>. A writer with an empty heading is not verified.</li>
+      </ul>
+    </article>
+
+    <div class="stem"></div>
+    <article class="node parallel">
+      <span class="kicker">Phase · Verify · parallel · capability all, prompt forbids edits</span>
+      <h2>Adversarial check</h2>
+      <ul>
+        <li>File exists and frontmatter name matches.</li>
+        <li><code>pdftotext -layout -f START -l START</code> shows the heading. Printed page numbers do not count.</li>
+        <li>Skill tells the agent to extract that range. Under 160 lines. No copied paragraph or register-description table.</li>
+        <li>Accept only when <code>accept</code> is true and <code>evidence</code> contains the start-page digits.</li>
+        <li>Missing writer, failed verifier, or evidence without the page digits → rejected.</li>
+      </ul>
+    </article>
+
+    <div class="stem"></div>
+    <article class="node agent">
+      <span class="kicker">Phase · Index · agent “index” · read-write</span>
+      <h2>Router skill</h2>
+      <p>Runs only when at least one skill was accepted and <code>{part}-datasheet</code> is at most 64 characters. Does not read the PDF. Writes only <code>{skills_dir}/{part}-datasheet/SKILL.md</code>: child names, outline numbers, titles, kinds, and page ranges. Under 220 lines.</p>
+    </article>
+
+    <div class="stem"></div>
+    <article class="node done">
+      <span class="kicker">complete</span>
+      <h2>Report</h2>
+      <p><code>report.md</code> lists accepted paths and rejected reasons. Result: accepted count, rejected count, PDF, part, router path.</p>
+    </article>
+  </div>
+
+  <aside class="side">
+    <section>
+      <h2>When a heading explodes</h2>
+      <p class="small"><code>should_explode</code> replaces a heading with its depth+1 children.</p>
+      <ol>
+        <li>Never explode <code>peripheral</code> or <code>skip</code>.</li>
+        <li>Count substantial children: every peripheral, plus sections at least <code>min_pages</code> long.</li>
+        <li>No substantial children → keep the parent.</li>
+        <li><code>container</code> always explodes.</li>
+        <li>Any peripheral child → explode.</li>
+        <li>A depth-0 <code>section</code> longer than <code>split_pages</code> with at least two substantial children → explode.</li>
+      </ol>
+    </section>
+    <section>
+      <h2>Agents per run</h2>
+      <table>
+        <tr><th>Call</th><th>Count</th></tr>
+        <tr><td>outline</td><td>1</td></tr>
+        <tr><td>classify</td><td>1</td></tr>
+        <tr><td>write</td><td>N</td></tr>
+        <tr><td>verify</td><td>≤ N</td></tr>
+        <tr><td>index</td><td>0 or 1</td></tr>
+      </table>
+      <p class="small" style="margin-top:8px">N is capped by <code>max_skills</code> and by <code>budget().remaining</code>. Default budget is 128. Worst case about 2N+3 agents.</p>
+    </section>
+    <section>
+      <h2>Files touched</h2>
+      <ul>
+        <li><code>{skills_dir}/{part}-{slug}/SKILL.md</code></li>
+        <li><code>{skills_dir}/{part}-datasheet/SKILL.md</code></li>
+        <li>Scratch: <code>catalog.md</code>, <code>report.md</code></li>
+      </ul>
+    </section>
+    <section>
+      <h2>Run</h2>
+      <p><span class="mono">/datasheet-skills</span> with <span class="mono">args.pdf</span> and <span class="mono">args.part</span>.</p>
+    </section>
+  </aside>
+</main>
+</body>
+</html>
